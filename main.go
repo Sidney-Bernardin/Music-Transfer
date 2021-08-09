@@ -2,37 +2,55 @@ package main
 
 import (
 	"context"
-	"net/http"
+	"fmt"
 	"os"
 
-	"github.com/Sidney-Bernardin/MusicTransfer/server"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 )
 
 var (
-	API_KEY = os.Getenv("API_KEY")
-	PORT    = os.Getenv("PORT")
+	youtubeAPIKey string
+	spotifyAPIKey string
+
+	youtubePlaylistID string
+	spotifyPlaylistID string
+
+	ytSrv *youtube.Service
 )
+
+func getENV(k string) string {
+	env, ok := os.LookupEnv(k)
+	if !ok {
+		logrus.Fatalf("%s is required", k)
+	}
+	return env
+}
 
 func main() {
 
-	// Setup the youtube service.
-	ytSrv, err := youtube.NewService(context.Background(), option.WithAPIKey(API_KEY))
+	// Get api keys.
+	youtubeAPIKey = getENV("YOUTUBE_API_KEY")
+
+	// Get playlist IDs.
+	youtubePlaylistID = getENV("YOUTUBE_PLAYLIST_ID")
+
+	var err error
+
+	// Setup youtube service.
+	ytSrv, err = youtube.NewService(context.Background(), option.WithAPIKey(youtubeAPIKey))
 	if err != nil {
 		logrus.Fatalf("cannot create youtube service: %v", err)
 	}
 
-	// Setup the server.
-	s, err := server.NewServer(ytSrv)
+	// Get youtube playlist.
+	ytPlaylist, err := getYTPlaylist()
 	if err != nil {
-		logrus.Fatalf("cannot create server: %s", err)
+		logrus.Fatalf("cannot get youtube playlist: %v", err)
 	}
 
-	// Start the server.
-	logrus.Infof("Listen and serveing on :%s ...\n", PORT)
-	if err := http.ListenAndServe(":"+PORT, s); err != nil {
-		logrus.Fatalf("listen and serve failed: %v", err)
+	for _, v := range ytPlaylist {
+		fmt.Println(v.Snippet.Title)
 	}
 }
