@@ -15,5 +15,6 @@ require (
 	github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8 // indirect
 	github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77 // indirect
 	github.com/zmb3/spotify v1.3.0 // indirect
+	golang.org/x/oauth2 v0.0.0-20210805134026-6f1e6394065a // indirect
 	google.golang.org/api v0.51.0 // indirect
 )

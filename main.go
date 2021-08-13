@@ -2,22 +2,19 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/option"
-	"google.golang.org/api/youtube/v3"
+	"github.com/zmb3/spotify"
+	"golang.org/x/oauth2"
 )
 
 var (
 	youtubeAPIKey string
-	spotifyAPIKey string
+	spotifyToken  string
 
 	youtubePlaylistID string
 	spotifyPlaylistID string
-
-	ytSrv *youtube.Service
 )
 
 func getENV(k string) string {
@@ -32,25 +29,35 @@ func main() {
 
 	// Get api keys.
 	youtubeAPIKey = getENV("YOUTUBE_API_KEY")
+	spotifyToken = getENV("SPOTIFY_TOKEN")
 
 	// Get playlist IDs.
 	youtubePlaylistID = getENV("YOUTUBE_PLAYLIST_ID")
+	spotifyPlaylistID = getENV("SPOTIFY_PLAYLIST_ID")
 
-	var err error
+	/*
+		// Setup youtube service.
+		ytSrv, err := youtube.NewService(context.Background(), option.WithAPIKey(youtubeAPIKey))
+		if err != nil {
+			logrus.Fatalf("cannot create youtube service: %v", err)
+		}
+	*/
 
-	// Setup youtube service.
-	ytSrv, err = youtube.NewService(context.Background(), option.WithAPIKey(youtubeAPIKey))
-	if err != nil {
-		logrus.Fatalf("cannot create youtube service: %v", err)
+	// Setup spotify service.
+	t := &oauth2.Token{AccessToken: spotifyToken}
+	c := oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(t))
+	spCli := spotify.NewClient(c)
+
+	// Get spotify playlist.
+	if err := spotifyEmptyPlaylist(spCli); err != nil {
+		logrus.Fatalf("cannot empty playlist: %v", err)
 	}
 
-	// Get youtube playlist.
-	ytPlaylist, err := getYTPlaylist()
-	if err != nil {
-		logrus.Fatalf("cannot get youtube playlist: %v", err)
-	}
-
-	for _, v := range ytPlaylist {
-		fmt.Println(v.Snippet.Title)
-	}
+	/*
+		// Get youtube playlist.
+		ytPlaylist, err := ytGetPlaylist(ytSrv)
+		if err != nil {
+			logrus.Fatalf("cannot get youtube playlist: %v", err)
+		}
+	*/
 }

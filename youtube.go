@@ -11,7 +11,7 @@ var (
 	errChannelNotFound = errors.New("channel not found")
 )
 
-func getYTPlaylist() ([]*youtube.PlaylistItem, error) {
+func ytGetPlaylist(srv *youtube.Service) ([]*youtube.PlaylistItem, error) {
 
 	var ret []*youtube.PlaylistItem
 	var pageToken string
@@ -20,7 +20,7 @@ func getYTPlaylist() ([]*youtube.PlaylistItem, error) {
 	for {
 
 		// Setup the playlist items call.
-		call := ytSrv.PlaylistItems.List([]string{"snippet", "contentDetails"}).
+		call := srv.PlaylistItems.List([]string{"snippet", "contentDetails"}).
 			PlaylistId(youtubePlaylistID).
 			MaxResults(50)
 
