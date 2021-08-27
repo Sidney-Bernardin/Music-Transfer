@@ -5,27 +5,34 @@ import (
 	"github.com/zmb3/spotify"
 )
 
-func spotifyEmptyPlaylist(client spotify.Client) error {
+func emptySpotifyPlaylist(client spotify.Client) error {
 
 	const operation = "spotifyEmptyPlaylist"
 
-	// Get the playlist tracks.
-	tracks, err := client.GetPlaylistTracks(spotify.ID(spotifyPlaylistID))
+	// Get the playlist songs.
+	songs, err := client.GetPlaylistTracks(spotify.ID(spotifyPlaylistID))
 	if err != nil {
 		return errors.Wrap(err, operation)
 	}
 
-	// Loop through the pages and add the IDs to a slice.
-	var ids []spotify.ID
+	// If there are no songs to remove, return.
+	if len(songs.Tracks) == 0 {
+		return nil
+	}
+
+	// Add the songs to the removal list.
+	var songsToRemove []spotify.ID
 	for page := 1; ; page++ {
 
-		// Add the track ids of this page to the ids slice.
-		for _, v := range tracks.Tracks {
-			ids = append(ids, v.Track.ID)
+		// Add the song IDs of this page.
+		for _, v := range songs.Tracks {
+			songsToRemove = append(songsToRemove, v.Track.ID)
 		}
 
 		// Go to the next page.
-		if err = client.NextPage(tracks); err == spotify.ErrNoMorePages {
+		if err = client.NextPage(songs); err == spotify.ErrNoMorePages {
+
+			// If there are no more pages, break free.
 			if err == spotify.ErrNoMorePages {
 				break
 			}
@@ -34,6 +41,6 @@ func spotifyEmptyPlaylist(client spotify.Client) error {
 		}
 	}
 
-	_, err = client.RemoveTracksFromPlaylist(spotify.ID(spotifyPlaylistID), ids[0])
+	_, err = client.RemoveTracksFromPlaylist(spotify.ID(spotifyPlaylistID), songsToRemove...)
 	return errors.Wrap(err, operation)
 }

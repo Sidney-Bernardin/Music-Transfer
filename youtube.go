@@ -1,8 +1,7 @@
 package main
 
 import (
-	"errors"
-
+	"github.com/pkg/errors"
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/youtube/v3"
 )
@@ -11,22 +10,25 @@ var (
 	errChannelNotFound = errors.New("channel not found")
 )
 
-func ytGetPlaylist(srv *youtube.Service) ([]*youtube.PlaylistItem, error) {
+func getYoutubePlaylistSongs(srv *youtube.Service) ([]*youtube.PlaylistItem, error) {
 
-	var ret []*youtube.PlaylistItem
-	var pageToken string
+	var (
+		operation = "ytGetPlaylist"
+		ret       []*youtube.PlaylistItem
+	)
 
-	// Get the Youtube playlist.
+	// Get the playlist songs using a forever loop to keep track of page tokens.
+	var nextPageToken string
 	for {
 
-		// Setup the playlist items call.
+		// Setup the call to get the playlist songs.
 		call := srv.PlaylistItems.List([]string{"snippet", "contentDetails"}).
 			PlaylistId(youtubePlaylistID).
 			MaxResults(50)
 
-		// Add the page token if its set.
-		if pageToken != "" {
-			call.PageToken(pageToken)
+		// Set the page token if its not empty.
+		if nextPageToken != "" {
+			call.PageToken(nextPageToken)
 		}
 
 		// Do the call.
@@ -38,21 +40,21 @@ func ytGetPlaylist(srv *youtube.Service) ([]*youtube.PlaylistItem, error) {
 				return nil, errChannelNotFound
 			}
 
-			return nil, err
+			return nil, errors.Wrap(err, operation)
 		}
 
-		// Go through the playlist items and add each one to tplData.
+		// Add the songs to the response.
 		for _, v := range res.Items {
 			ret = append(ret, v)
 		}
 
-		// If there is no next-page token, break free from the loop.
+		// If there is no next page token, break free from the loop.
 		if res.NextPageToken == "" {
 			break
 		}
 
-		// Save the next-page token.
-		pageToken = res.NextPageToken
+		// Save the next page token.
+		nextPageToken = res.NextPageToken
 	}
 
 	return ret, nil
