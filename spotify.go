@@ -20,11 +20,11 @@ func emptySpotifyPlaylist(client spotify.Client) error {
 		return nil
 	}
 
-	// Add the songs to the removal list.
+	// Go through the songs one page at a time.
 	var songsToRemove []spotify.ID
-	for page := 1; ; page++ {
+	for {
 
-		// Add the song IDs of this page.
+		// Add the song IDs of theis page.
 		for _, v := range songs.Tracks {
 			songsToRemove = append(songsToRemove, v.Track.ID)
 		}
@@ -41,6 +41,19 @@ func emptySpotifyPlaylist(client spotify.Client) error {
 		}
 	}
 
-	_, err = client.RemoveTracksFromPlaylist(spotify.ID(spotifyPlaylistID), songsToRemove...)
-	return errors.Wrap(err, operation)
+	// Setup the proper increment value.
+	incr := 100
+	if len(songsToRemove) < 100 {
+		incr = len(songsToRemove)
+	}
+
+	// Delete the songs.
+	for i := 0; i < len(songsToRemove); i += incr {
+		_, err = client.RemoveTracksFromPlaylist(spotify.ID(spotifyPlaylistID), songsToRemove[i:i+incr]...)
+		if err != nil {
+			return errors.Wrap(err, operation)
+		}
+	}
+
+	return nil
 }
