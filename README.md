@@ -22,5 +22,5 @@ YOUTUBE_API_KEY, YOUTUBE_PLAYLIST_ID, SPOTIFY_TOKEN, SPOTIFY_PLAYLIST_ID.
 ## Run.
 cd into the repo then run with
 ```
-go build && ./MusicTranfer
+go build && ./MusicTransfer
 ```
