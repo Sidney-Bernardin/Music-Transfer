@@ -10,7 +10,7 @@ git clone https://github.com/Sidney-Bernardin/MusicTransfer.git
 ```
 
 #### Environment variables
-You are going to need to set these env-vars set before installing.<br>
+You are going to need to set these env-vars before installing.<br>
 YOUTUBE_API_KEY, YOUTUBE_PLAYLIST_ID, SPOTIFY_TOKEN, SPOTIFY_PLAYLIST_ID.
 
 #### Getting the tokens and playlist IDs.
